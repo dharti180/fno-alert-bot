@@ -76,8 +76,7 @@ def send_alert(msg):
 
 def get_prev_month_levels(symbol):
     try:
-        today     = date.today()
-        # Previous month date range
+        today                = date.today()
         first_of_this_month  = today.replace(day=1)
         last_of_prev_month   = first_of_this_month - relativedelta(days=1)
         first_of_prev_month  = last_of_prev_month.replace(day=1)
@@ -86,12 +85,25 @@ def get_prev_month_levels(symbol):
         end_str   = last_of_prev_month.strftime("%d-%m-%Y")
 
         df = equity_history(symbol, "EQ", start_str, end_str)
+
         if df is None or df.empty:
             return None, None
 
-        prev_high = round(float(df["CH_TRADE_HIGH_PRICE"].max()), 2)
-        prev_low  = round(float(df["CH_TRADE_LOW_PRICE"].min()),  2)
+        # Try different possible column name formats
+        high_cols = ["CH_TRADE_HIGH_PRICE", "dayHigh", "high", "High"]
+        low_cols  = ["CH_TRADE_LOW_PRICE",  "dayLow",  "low",  "Low"]
+
+        high_col = next((c for c in high_cols if c in df.columns), None)
+        low_col  = next((c for c in low_cols  if c in df.columns), None)
+
+        if not high_col or not low_col:
+            print(f"  {symbol} columns available: {list(df.columns)}")
+            return None, None
+
+        prev_high = round(float(df[high_col].max()), 2)
+        prev_low  = round(float(df[low_col].min()),  2)
         return prev_high, prev_low
+
     except Exception as e:
         print(f"Error fetching monthly levels for {symbol}: {e}")
         return None, None
