@@ -1,3 +1,6 @@
+import subprocess, sys
+subprocess.check_call([sys.executable, "-m", "pip", "install",
+    "requests", "nsepython", "pytz", "python-dateutil"])
 import requests
 import time
 from datetime import datetime, date
